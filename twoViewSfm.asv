@@ -1,0 +1,16 @@
+close all; 
+clear;
+clc;
+
+left  = input('data/aloeL.jpg'); 
+right = input('data/aloeR.jpg'); 
+
+function res = gray(name) 
+    res = rgb2gray(name); 
+    f
+
+function res = input(name)
+    res = imread(name);
+    figure; 
+    imshow(res); 
+end
