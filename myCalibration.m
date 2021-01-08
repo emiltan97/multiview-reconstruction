@@ -1,0 +1,55 @@
+close all; clear; clc;
+%% Estimating the Projection Matrix
+% Read the image 
+img = imread('mydata03/l3.png');
+% Show the image with the points detected
+figure; 
+imshow(img);
+hold on;
+% Manually recorded pixel coordinates in the camera coordinate system
+x = [213; 242; 389; 385;457; 455; 329; 326; 243; 240];
+y = [442; 475; 515; 633; 663; 773; 692; 818; 520; 659];
+% Plot the points on the image
+plot(x, y, 'ro');
+% Manually recorded the PoI in the world coordinate system
+P = [
+        [0.021 0.042 0.084 0.084 0.084 0.084 -0.002 -0.002 -0.017 -0.017];
+        [-0.021 -0.042 -0.063 -0.136 -0.136 -0.198 -0.136 -0.198 -0.063 -0.136]; 
+        [0 0 0.109 0.109 0.168 0.168 0.168 0.168 0.109 0.109];
+        [1 1 1 1 1 1 1 1 1 1];
+];
+% for loop to construct the Q matrix 
+Q = [];
+for n = 1: 1: 10
+    Pk = P(:, n); % 4x1 vec
+    zeroMat= zeros(size(Pk)); % 4x1 0
+    xk = x(n); % x coordinate of a point in terms of pixels 
+    yk = y(n); % y coordinate of a point in terms of pixels
+    Qk = [Pk' zeroMat' -xk*Pk' ; zeroMat' Pk' -yk*Pk'];
+    Q = [Q; Qk]; % stacking vertically
+end
+% SVD mode 2
+[U, E, V] = svd(Q, 0);
+% The projection matrix 
+% Converting the vector v12 into a 3x4 matrix
+V = V';
+M = [[V(12, 1), V(12, 2), V(12, 3),  V(12,4)];
+     [V(12, 5), V(12, 6), V(12, 7),  V(12,8)];
+     [V(12, 9), V(12,10), V(12, 11), V(12, 12)]];
+ 
+%% Estimating the Intrinsic and Extrinsic Parameters
+k = 1429; % pixels in a meter along the x-axis
+l = 1429; % pixels in a meter along the y-axis 
+temp = M * P(:,1);
+rho = 1 / temp(3); % the scalar factor
+a1 = M(1,1:end-1)'; 
+a2 = M(2,1:end-1)';
+a3 = M(3,1:end-1)';
+r3 = rho*a3; % the third row of rotation matrix 
+u0 = (rho^2)*(dot(a1,a3)); % the camera center in terms of x axis
+v0 = (rho^2)*(dot(a2,a3)); % the camera center in terms of y axis 
+alpha = (rho^2)*(norm(cross(a1, a3))); 
+beta = (rho^2)*(norm(cross(a2, a3)));
+f = alpha / k; % focal length
+r1 = (1/(norm(cross(a2,a3)))) * (cross(a2,a3)); % the first row of the rotation matrix
+r2 = cross(r3, r1); % the second row of the rotation matrix
