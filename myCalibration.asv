@@ -38,7 +38,7 @@ M = [[V(12, 1), V(12, 2), V(12, 3),  V(12,4)];
      [V(12, 9), V(12,10), V(12, 11), V(12, 12)]];
  
 %% Estimating the Intrinsic and Extrinsic Parameters
-k = 1429; % pixels in a meter along the x-axis
+% k = 1429; % pixels in a meter along the x-axis
 % l = 1429; % pixels in a meter along the y-axis 
 % temp = M * P(:,1);
 % rho = 1 / temp(3); % the scalar factor
@@ -52,7 +52,7 @@ v0 = (rho^2)*(dot(a2,a3)); % the camera center in terms of y axis
 theta = acos(-((dot(cross(a1, a3), cross(a2, a3))) / ((norm(cross(a1, a3))) * (norm(cross(a2, a3))))));
 alpha = (rho^2)*(norm(cross(a1, a3))) * sin(theta); 
 beta = (rho^2)*(norm(cross(a2, a3))) * sin(theta);
-f = alpha / k; % focal length
+% f = alpha / k; % focal length
 r1 = (1/(norm(cross(a2,a3)))) * (cross(a2,a3)); % the first row of the rotation matrix
 r2 = cross(r3, r1); % the second row of the rotation matrix
 b = M(:, 4); 
@@ -60,7 +60,4 @@ K = [[alpha -alpha*cot(theta) u0];
     [0 beta/sin(theta) v0];
     [0 0 1]];
 t = rho * inv(K) * b;
-%% Pin point the camera center
-hold on;
-% Plot the points on the image
-plot(u0, v0, 'c*');
+%% Pin point 
