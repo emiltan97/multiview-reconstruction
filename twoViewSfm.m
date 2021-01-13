@@ -38,7 +38,7 @@ function main(leftname, rightname, ins1, ins2, outname)
     % Estimate the Fundamental Matrix
 %     [fMatrix, epipolarInliers] = estimateFundamentalMatrix(matchedPoints1, matchedPoints2, 'Method', 'MSAC', 'NumTrials', 10000);
     [fMatrix, epipolarInliers] = estimateFundamentalMatrix(matchedPoints1, matchedPoints2, 'Method', 'Norm8Point');
-    % [fMatrix, epipolarInliers] = estimateFundamentalMatrix(matchedPoints1, matchedPoints2, 'Method', 'RANSAC', 'NumTrials', 10000, 'DistanceThreshold', 0.1, 'Confidence', 99.99);
+    %   [fMatrix, epipolarInliers] = estimateFundamentalMatrix(matchedPoints1, matchedPoints2, 'Method', 'RANSAC', 'NumTrials', 10000, 'DistanceThreshold', 0.1, 'Confidence', 99.99);
     inlierPoints1 = matchedPoints1(epipolarInliers, :); 
     inlierPoints2 = matchedPoints2(epipolarInliers, :); 
 
