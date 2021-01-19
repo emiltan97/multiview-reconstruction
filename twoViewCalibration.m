@@ -18,7 +18,7 @@ P = [
         [1 1 1 1 1 1 1 1 1 1];
 ];
 
-% showImageWithPoints(left, xl, yl);
+showImageWithPoints(left, xl, yl);
 % showImageWithPoints(right, xr, yr);
 
 ml = estimateProjectionMatrix(xl, yl, P);
@@ -27,31 +27,36 @@ mr = estimateProjectionMatrix(xr, yr, P);
 [kl, rl, tl] = estimateInsExParams(ml);
 [kr, rr, tr] = estimateInsExParams(mr);
 
+% Show the position of the camera in respect to the scene 
 figure;
-plot3(P(1, :), P(3, :), P(2, :), 'o');
-set(gca, 'Ydir', 'reverse');
+plot3(P(1, :), P(2, :), P(3, :), 'ro');
 hold on;
-plot3(0, 0, 0, 'r*');
+origin = plot3(0, 0, 0, 'r*');
 xlabel('x')
-ylabel('z');
-zlabel('y');
+ylabel('y');
+zlabel('z');
 hold on;
 grid on;
-
-t1 = [tl(1) tl(3) tl(2)];
-t2 = [tr(1) tr(3) tr(2)];
-r1 = [rl(:, 1) rl(:, 3) rl(:, 2)];
-r2 = [rr(:, 1) rr(:, 3) rr(:, 2)];
-
-absPoseL = rigid3d(r1, t1);
-absPoseR = rigid3d(rr, t2);
+absPoseL = rigid3d(rl, (-inv(rl)*tl)');
+absPoseR = rigid3d(rr, (-inv(rr)*tr)');
 plotCamera('AbsolutePose', absPoseL, 'Size', 0.01, 'Color', 'r', 'Label', '1', 'Opacity', 0);
 plotCamera('AbsolutePose', absPoseR, 'Size', 0.01, 'Color', 'b', 'Label', '2', 'Opacity', 0);
+
+% Reprojecting the points using the projection matrix
 % reprojectPoints(left, ml, kl, P);
 % reprojectPoints(right, mr, kr, P); 
-% 
-% f = estimateFundamentalMatrix(xl, yl, xr, yr);
+
+% Reprojecttion the points in 3D
+triangulatedPoints = [];
+for n = 1:1:10 
+    temp = estimateTriangulatedPoints(xl, yl, xr, yr, ml, mr, n);
+    triangulatedPoints = [triangulatedPoints; temp];
+end
+plot3(triangulatedPoints(:, 1), triangulatedPoints(:, 2), triangulatedPoints(:, 3), "b*");
+
+f = estimateFundamentalMatrix(xl, yl, xr, yr);
 % e = kl * f * kr;
+   
 %% All the functions
 function showImageWithPoints(img, x, y) 
     figure; 
@@ -101,6 +106,7 @@ function [K, R, t] = estimateInsExParams(M)
              [0 0 1]];
     t     = rho * inv(K) * b;
     R     = [r1'; r2'; r3'];
+%     f     = alpha / 1429;
 end
 
 function reprojectPoints(img, M, K, P)
@@ -132,4 +138,25 @@ function res = estimateFundamentalMatrix(x1, y1, x2, y2)
     res = [[f(1, 1), f(2, 1), f(3, 1)];
            [f(4, 1), f(5, 1), f(6, 1)];
            [f(7, 1), f(8, 1), 1      ]];
+end
+
+function res = estimateTriangulatedPoints(x1, y1, x2, y2, ml, mr, n)
+    u   = x1(n); 
+    v   = y1(n);
+    up  = x2(n);
+    vp  = y2(n);
+    m1  = ml(1, :);
+    m2  = ml(2, :);
+    m3  = ml(3, :);
+    mp1 = mr(1, :);
+    mp2 = mr(2, :);
+    mp3 = mr(3, :);
+    Q   = [(u*m3 - m1); (v*m3 - m2); (up*mp3 - mp1); (vp*mp3 - mp2)];
+    
+    [U, E, V] = svd(Q, 0);
+    V = V'; 
+    if V(end) < 0
+        V = -1 * V;
+    end
+    res = V(4, :);
 end

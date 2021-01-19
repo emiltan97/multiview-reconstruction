@@ -1,11 +1,11 @@
 close all; clear; clc; 
 
-ptCloudRef = pcread('out0203.ply');
-ptCloudCurrent = pcread('out0304.ply');
+ptCloudRef = pcread('out0102.ply');
+ptCloudCurrent = pcread('out0203.ply');
 
-% gridSize = 0.01;
-% fixed = pcdownsample(ptCloudRef, 'gridAverage', gridSize);
-% moving = pcdownsample(ptCloudCurrent, 'gridAverage', gridSize);
+gridSize = 0.01;
+fixed = pcdownsample(ptCloudRef, 'gridAverage', gridSize);
+moving = pcdownsample(ptCloudCurrent, 'gridAverage', gridSize);
 
 tform = pcregistericp(ptCloudRef, ptCloudCurrent, 'Metric','pointToPlane','Extrapolate', true);
 ptCloudAligned = pctransform(ptCloudCurrent,tform);
